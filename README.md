@@ -1,2 +1,2 @@
 # Unblocked games HTML
-Download games then run game from html file
+Download files then run game from html file in file explorer.
