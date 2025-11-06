@@ -3,66 +3,136 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Snake Game</title>
+<title>Sleek Snake Game</title>
 <style>
-    /* General body styling */
     body {
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         height: 100vh;
-        background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: radial-gradient(circle at center, #1c1c28, #0d0d15);
+        font-family: 'Segoe UI', sans-serif;
         margin: 0;
         color: #fff;
     }
 
-    /* Game container */
     .game-container {
         position: relative;
         width: 400px;
         height: 400px;
-        background-color: #111;
-        border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        background-color: #000;
+        border-radius: 18px;
+        box-shadow: 0 0 25px rgba(0,0,0,0.6);
         display: grid;
-        grid-template-rows: repeat(20, 1fr);
-        grid-template-columns: repeat(20, 1fr);
-        margin-bottom: 20px;
+        grid-template-rows: repeat(18, 1fr);
+        grid-template-columns: repeat(18, 1fr);
+        margin-top: 20px;
+        overflow: hidden;
+        padding: 5px;
+        box-sizing: border-box;
     }
 
-    /* Snake styling */
+    .glow-border {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        right: 2px;
+        bottom: 2px;
+        border: 3px solid #00ff7f;
+        border-radius: 16px;
+        box-shadow: 0 0 18px #00ff7f, inset 0 0 12px #00ff7f;
+        pointer-events: none;
+        z-index: 5;
+    }
+
     .snake {
         background-color: #00ff7f;
-        border-radius: 5px;
+        border-radius: 4px;
         box-shadow: 0 0 8px #00ff7f;
+        width: 90%;
+        height: 90%;
+        margin: auto;
     }
 
-    /* Food styling */
     .food {
-        background-color: #ff4757;
+        background-color: #ff4d4d;
         border-radius: 50%;
-        box-shadow: 0 0 10px #ff6b81;
+        box-shadow: 0 0 10px #ff6666;
+        width: 90%;
+        height: 90%;
+        margin: auto;
     }
 
-    /* Score display - simple glow */
     .score {
-        position: absolute;
-        top: -50px;
-        left: 50%;
-        transform: translateX(-50%);
+        font-size: 20px;
         color: #00ff7f;
-        font-size: 18px;
-        letter-spacing: 1px;
-        text-shadow: 0 0 8px #00ff7f;
+        text-shadow: 0 0 10px #00ff7f;
+        margin-bottom: 8px;
     }
 
-    /* Game made by text */
+    .reset-btn {
+        background: #00ff7f;
+        color: #000;
+        font-size: 22px;
+        font-weight: bold;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 0 15px #00ff7f;
+        transition: all 0.2s ease;
+        margin-top: 12px;
+    }
+
+    .reset-btn:hover {
+        transform: rotate(180deg) scale(1.1);
+        background: #00cc66;
+        box-shadow: 0 0 20px #00ff7f;
+    }
+
+    /* Updated embed button style */
+    .embed-btn {
+        background: #ffcc00; /* match credit text */
+        color: #000; /* black text for contrast */
+        font-weight: bold;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 18px;
+        margin-top: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 0 10px #ffcc00;
+    }
+
+    .embed-btn:hover {
+        background: #e6b800; /* slightly darker on hover */
+        box-shadow: 0 0 15px #ffcc00;
+    }
+
+    .embed-box {
+        display: none;
+        margin-top: 10px;
+        background: #111;
+        color: #00ff7f;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #00ff7f;
+        font-family: monospace;
+        width: 340px;
+        text-align: center;
+        box-shadow: inset 0 0 10px #00ff7f;
+        word-break: break-word;
+    }
+
     .game-credit {
+        margin-top: 24px; /* space from reset button */
         font-weight: bold;
         font-size: 16px;
-        text-align: center;
         color: #ffcc00;
         text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
     }
@@ -70,25 +140,34 @@
 </head>
 <body>
 
+<div class="score">Score: 0</div>
+
 <div class="game-container">
-    <div class="score">Score: 0</div>
+    <div class="glow-border"></div>
 </div>
+
+<button class="reset-btn">↻</button>
+
 <div class="game-credit">Game made by <strong>Unblocked99</strong></div>
+
+<!-- Embed button + box BELOW credit -->
+<button class="embed-btn">Embed on your website</button>
+<div class="embed-box" id="embedCode">
+&lt;iframe src="https://gamesunblocked99.github.io/unblocked99-site/snake.html" width="400" height="460" frameborder="0" allowfullscreen&gt;&lt;/iframe&gt;
+</div>
 
 <script>
     const container = document.querySelector('.game-container');
     const scoreDisplay = document.querySelector('.score');
-    const gridSize = 20;
+    const resetButton = document.querySelector('.reset-btn');
+    const embedButton = document.querySelector('.embed-btn');
+    const embedBox = document.getElementById('embedCode');
+
+    const gridSize = 18;
     const cellCount = gridSize * gridSize;
 
-    let snake = [2,1,0]; // initial snake body (indexes)
-    let direction = 1; // initial moving right
-    let foodIndex = 0;
-    let score = 0;
-    let speed = 200; // ms
-    let interval;
+    let snake, direction, foodIndex, score, interval, speed;
 
-    // Draw snake and food
     function draw() {
         container.querySelectorAll('.snake, .food').forEach(cell => cell.remove());
         snake.forEach(index => {
@@ -106,59 +185,63 @@
         container.appendChild(food);
     }
 
-    // Generate random food
     function generateFood() {
         do {
             foodIndex = Math.floor(Math.random() * cellCount);
-        } while(snake.includes(foodIndex));
+        } while (snake.includes(foodIndex));
     }
 
-    // Move snake
     function move() {
         const head = snake[0] + direction;
 
-        // Collision detection (walls & self)
-        const hitLeft = head % gridSize === gridSize - 1 && direction === 1;
-        const hitRight = head % gridSize === 0 && direction === -1;
-        const hitTop = head < 0 && direction === -gridSize;
-        const hitBottom = head >= cellCount && direction === gridSize;
+        const hitLeftWall = snake[0] % gridSize === 0 && direction === -1;
+        const hitRightWall = (snake[0] + 1) % gridSize === 0 && direction === 1;
+        const hitTopWall = head < 0;
+        const hitBottomWall = head >= cellCount;
 
-        if (snake.includes(head) || hitLeft || hitRight || hitTop || hitBottom) {
+        if (snake.includes(head) || hitLeftWall || hitRightWall || hitTopWall || hitBottomWall) {
             clearInterval(interval);
-            alert(`Game Over! Score: ${score}`);
+            alert(`💀 Game Over! Final Score: ${score}`);
             return;
         }
 
         snake.unshift(head);
-
-        // Check for food
-        if(head === foodIndex) {
+        if (head === foodIndex) {
             score++;
             scoreDisplay.textContent = `Score: ${score}`;
             generateFood();
         } else {
             snake.pop();
         }
-
         draw();
     }
 
-    // Control snake
     function control(e) {
-        if(e.key === 'ArrowUp' && direction !== gridSize) direction = -gridSize;
-        if(e.key === 'ArrowDown' && direction !== -gridSize) direction = gridSize;
-        if(e.key === 'ArrowLeft' && direction !== 1) direction = -1;
-        if(e.key === 'ArrowRight' && direction !== -1) direction = 1;
+        if (e.key === 'ArrowUp' && direction !== gridSize) direction = -gridSize;
+        if (e.key === 'ArrowDown' && direction !== -gridSize) direction = gridSize;
+        if (e.key === 'ArrowLeft' && direction !== 1) direction = -1;
+        if (e.key === 'ArrowRight' && direction !== -1) direction = 1;
     }
 
     document.addEventListener('keydown', control);
 
-    // Start game
     function startGame() {
+        snake = [85, 84, 83];
+        direction = 1;
+        score = 0;
+        speed = 160;
+        scoreDisplay.textContent = 'Score: 0';
         generateFood();
         draw();
+        clearInterval(interval);
         interval = setInterval(move, speed);
     }
+
+    resetButton.addEventListener('click', startGame);
+
+    embedButton.addEventListener('click', () => {
+        embedBox.style.display = embedBox.style.display === 'block' ? 'none' : 'block';
+    });
 
     startGame();
 </script>
