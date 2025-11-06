@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake Game</title>
+<style>
+    /* General body styling */
+    body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        color: #fff;
+    }
+
+    /* Game container */
+    .game-container {
+        position: relative;
+        width: 400px;
+        height: 400px;
+        background-color: #111;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        display: grid;
+        grid-template-rows: repeat(20, 1fr);
+        grid-template-columns: repeat(20, 1fr);
+        margin-bottom: 20px;
+    }
+
+    /* Snake styling */
+    .snake {
+        background-color: #00ff7f;
+        border-radius: 5px;
+        box-shadow: 0 0 8px #00ff7f;
+    }
+
+    /* Food styling */
+    .food {
+        background-color: #ff4757;
+        border-radius: 50%;
+        box-shadow: 0 0 10px #ff6b81;
+    }
+
+    /* Score display - simple glow */
+    .score {
+        position: absolute;
+        top: -50px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #00ff7f;
+        font-size: 18px;
+        letter-spacing: 1px;
+        text-shadow: 0 0 8px #00ff7f;
+    }
+
+    /* Game made by text */
+    .game-credit {
+        font-weight: bold;
+        font-size: 16px;
+        text-align: center;
+        color: #ffcc00;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+    }
+</style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="score">Score: 0</div>
+</div>
+<div class="game-credit">Game made by <strong>Unblocked99</strong></div>
+
+<script>
+    const container = document.querySelector('.game-container');
+    const scoreDisplay = document.querySelector('.score');
+    const gridSize = 20;
+    const cellCount = gridSize * gridSize;
+
+    let snake = [2,1,0]; // initial snake body (indexes)
+    let direction = 1; // initial moving right
+    let foodIndex = 0;
+    let score = 0;
+    let speed = 200; // ms
+    let interval;
+
+    // Draw snake and food
+    function draw() {
+        container.querySelectorAll('.snake, .food').forEach(cell => cell.remove());
+        snake.forEach(index => {
+            const snakePart = document.createElement('div');
+            snakePart.classList.add('snake');
+            snakePart.style.gridRowStart = Math.floor(index / gridSize) + 1;
+            snakePart.style.gridColumnStart = (index % gridSize) + 1;
+            container.appendChild(snakePart);
+        });
+
+        const food = document.createElement('div');
+        food.classList.add('food');
+        food.style.gridRowStart = Math.floor(foodIndex / gridSize) + 1;
+        food.style.gridColumnStart = (foodIndex % gridSize) + 1;
+        container.appendChild(food);
+    }
+
+    // Generate random food
+    function generateFood() {
+        do {
+            foodIndex = Math.floor(Math.random() * cellCount);
+        } while(snake.includes(foodIndex));
+    }
+
+    // Move snake
+    function move() {
+        const head = snake[0] + direction;
+
+        // Collision detection (walls & self)
+        const hitLeft = head % gridSize === gridSize - 1 && direction === 1;
+        const hitRight = head % gridSize === 0 && direction === -1;
+        const hitTop = head < 0 && direction === -gridSize;
+        const hitBottom = head >= cellCount && direction === gridSize;
+
+        if (snake.includes(head) || hitLeft || hitRight || hitTop || hitBottom) {
+            clearInterval(interval);
+            alert(`Game Over! Score: ${score}`);
+            return;
+        }
+
+        snake.unshift(head);
+
+        // Check for food
+        if(head === foodIndex) {
+            score++;
+            scoreDisplay.textContent = `Score: ${score}`;
+            generateFood();
+        } else {
+            snake.pop();
+        }
+
+        draw();
+    }
+
+    // Control snake
+    function control(e) {
+        if(e.key === 'ArrowUp' && direction !== gridSize) direction = -gridSize;
+        if(e.key === 'ArrowDown' && direction !== -gridSize) direction = gridSize;
+        if(e.key === 'ArrowLeft' && direction !== 1) direction = -1;
+        if(e.key === 'ArrowRight' && direction !== -1) direction = 1;
+    }
+
+    document.addEventListener('keydown', control);
+
+    // Start game
+    function startGame() {
+        generateFood();
+        draw();
+        interval = setInterval(move, speed);
+    }
+
+    startGame();
+</script>
+
+</body>
+</html>
